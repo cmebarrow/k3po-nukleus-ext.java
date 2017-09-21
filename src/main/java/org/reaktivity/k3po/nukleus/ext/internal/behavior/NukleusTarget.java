@@ -23,6 +23,7 @@ import static org.jboss.netty.channel.Channels.fireChannelConnected;
 import static org.jboss.netty.channel.Channels.fireChannelDisconnected;
 import static org.jboss.netty.channel.Channels.fireChannelInterestChanged;
 import static org.jboss.netty.channel.Channels.fireChannelUnbound;
+import static org.jboss.netty.channel.Channels.fireExceptionCaught;
 import static org.jboss.netty.channel.Channels.fireWriteComplete;
 import static org.jboss.netty.channel.Channels.succeededFuture;
 import static org.kaazing.k3po.driver.internal.netty.channel.Channels.fireFlushed;
@@ -524,6 +525,12 @@ final class NukleusTarget implements AutoCloseable
             WindowFW window)
         {
             final int update = window.update();
+            if (update < 0)
+            {
+                String error = "Invalid Window frame: negative update " + update;
+                System.out.println("ERROR: " + error);
+                fireExceptionCaught(channel, new IllegalArgumentException(error));
+            }
             final int frames = window.frames();
 
             channel.targetWindowUpdate(update, frames);
